@@ -10,10 +10,26 @@ variable "vpc_id" {
     # default = "vpc-067f3ab097282bc4d"
 }
 
-variable "subnet_id" {
-    description = "subnet id"
-    type = string
-    # default = "subnet-0021081c508245985"
+data "aws_subnets" "public" {
+  filter {
+    name   = "vpc-id"
+    values = [var.vpc_id]
+  }
+  filter {
+    name   = "tag:Name"
+    values = ["public-*"]
+  }
+}
+
+data "aws_subnets" "private" {
+  filter {
+    name   = "vpc-id"
+    values = [var.vpc_id]
+  }
+  filter {
+    name   = "tag:Name"
+    values = ["private-*"]
+  }
 }
 
 locals {
@@ -23,7 +39,7 @@ locals {
 resource "aws_instance" "public" {
   ami                         = "ami-04c913012f8977029"
   instance_type               = "t2.micro"
-  subnet_id                   = var.subnet_id #Public Subnet ID, e.g. subnet-xxxxxxxxxxx.
+  subnet_id                   = data.aws_subnets.public.ids[0] #Public Subnet ID, e.g. subnet-xxxxxxxxxxx.
   associate_public_ip_address = true
   vpc_security_group_ids = [aws_security_group.allow_ssh.id]
  
@@ -61,3 +77,12 @@ output "public_ip" {
 output "public_dns" {
     value = aws_instance.public.public_dns
 }
+
+output "public_subnet_ids" {
+    value = data.aws_subnets.public.ids
+}
+
+output "private_subnet_ids" {
+    value = data.aws_subnets.private.ids
+}
+
