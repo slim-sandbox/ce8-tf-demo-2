@@ -16,6 +16,10 @@ variable "subnet_id" {
     # default = "subnet-0021081c508245985"
 }
 
+locals {
+    department = "marketing"
+}
+
 resource "aws_instance" "public" {
   ami                         = "ami-04c913012f8977029"
   instance_type               = "t2.micro"
@@ -25,6 +29,7 @@ resource "aws_instance" "public" {
  
   tags = {
     Name = "${var.name}-ec2"
+    Department = local.department
   }
 }
 
@@ -35,6 +40,10 @@ resource "aws_security_group" "allow_ssh" {
   lifecycle {
     create_before_destroy = true
   }
+ 
+  tags = {
+    Department = local.department
+  }
 }
 
 resource "aws_vpc_security_group_ingress_rule" "allow_tls_ipv4" {
@@ -43,4 +52,12 @@ resource "aws_vpc_security_group_ingress_rule" "allow_tls_ipv4" {
   from_port         = 22
   ip_protocol       = "tcp"
   to_port           = 22
+}
+
+output "public_ip" {
+    value = aws_instance.public.public_ip
+}
+
+output "public_dns" {
+    value = aws_instance.public.public_dns
 }
