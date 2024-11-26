@@ -4,4 +4,9 @@ terraform apply -var="name=somename"  -var="vpc_id=vpc-067f3ab097282bc4d" -var="
 
 # apply using tfvars file
 terraform apply -var-file=dev.tfvars
+
+# show outputs
+terraform output
+terraform output -json
+terraform output -raw public_ip
 ```
